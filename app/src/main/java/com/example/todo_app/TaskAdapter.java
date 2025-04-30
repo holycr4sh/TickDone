@@ -1,10 +1,16 @@
 package com.example.todo_app;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+import java.util.List;
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
-
-    private List<Task> taskList;
+    private List<Task> tasks;
 
     public TaskAdapter(List<Task> tasks) {
-        this.taskList = tasks;
+        this.tasks = tasks;
     }
 
     @NonNull
@@ -17,14 +23,14 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
-        Task task = taskList.get(position);
+        Task task = tasks.get(position);
         holder.checkBox.setText(task.getName());
         holder.checkBox.setChecked(task.isCompleted());
     }
 
     @Override
     public int getItemCount() {
-        return taskList.size();
+        return tasks.size();
     }
 
     public static class TaskViewHolder extends RecyclerView.ViewHolder {

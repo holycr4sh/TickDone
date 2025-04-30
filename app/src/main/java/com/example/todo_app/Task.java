@@ -1,52 +1,43 @@
 package com.example.todo_app;
-public class Task {
+
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+public class Task implements Serializable {
     private String name;
     private String description;
     private String dueDate;
-    private String priority; // "High", "Medium", "Low"
-    private boolean isCompleted;
+    private String priority;
 
-    // Constructor
+    private boolean completed;
+
     public Task(String name, String description, String dueDate, String priority) {
         this.name = name;
         this.description = description;
         this.dueDate = dueDate;
         this.priority = priority;
-        this.isCompleted = false;
     }
 
-    public String getDescription() {
-        return description;
-    }
+    // Getters & Setters
+    public String getName() { return name; }
+    public String getDescription() { return description; }
+    public String getDueDate() { return dueDate; }
+    public String getPriority() { return priority; }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public boolean isCompleted() {
+        return completed;
     }
-    public String getDueDate(){
-        return dueDate;
+    public String toStorageString() {
+        return name + "|||" + description + "|||" + dueDate + "|||" + priority;
     }
-
-    public void setDueDate(String dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getPriority() {
-        return priority;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPriority(String priority) {
-        this.priority = priority;
-    }
-
     public void setCompleted(boolean completed) {
-        isCompleted = completed;
+        this.completed = completed;
+    }
+
+    public static Task fromStorageString(String str) {
+        String[] parts = str.split("\\|\\|\\|");
+        return new Task(parts[0], parts[1], parts[2], parts[3]);
     }
 }
