@@ -1,8 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Todo" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/holo_blue_dark</item>
+        <item name="colorPrimaryContainer">@color/holo_blue_dark</item> <!-- For containers -->
+        <item name="colorOnPrimary">@color/white</item> <!-- Text/icons on primary color -->
+        <item name="colorSecondary">@color/holo_blue_dark</item> <!-- Checkboxes/radios -->
     </style>
 
     <style name="Theme.Todo" parent="Base.Theme.Todo" />

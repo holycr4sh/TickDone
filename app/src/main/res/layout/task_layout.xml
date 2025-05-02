@@ -19,7 +19,6 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:paddingStart="8dp"
-            android:buttonTint="@android:color/holo_blue_dark"
             tools:text="Kiss my ass."/>
 
     </RelativeLayout>

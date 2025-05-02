@@ -47,7 +47,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Select New Date"
-        android:backgroundTint="@android:color/holo_blue_dark"
         />
     <TextView
         android:id="@+id/tvNewSelectedDate"
@@ -94,7 +93,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="Save Modifications"
-        android:backgroundTint="@android:color/holo_blue_dark"
 
         />
 </LinearLayout>

@@ -55,8 +55,7 @@
         android:id="@+id/btnSelectDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select Date"
-        android:backgroundTint="@android:color/holo_blue_dark"/>
+        android:text="Select Date"/>
 
     <TextView
         android:id="@+id/tvSelectedDate"
@@ -102,7 +101,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Save Task"
-        android:backgroundTint="@android:color/holo_blue_dark"/>
+        android:text="Save Task"/>
 
 </LinearLayout>
