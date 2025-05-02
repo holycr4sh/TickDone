@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_new_task"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    tools:text="Kiss my ass.">
-
+    tools:text=""
+    android:fitsSystemWindows="true">
 
     <TextView
         android:layout_width="wrap_content"
@@ -80,20 +81,23 @@
             android:id="@+id/rbHigh"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:text="High Priority" />
 
         <RadioButton
             android:id="@+id/rbMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Medium Priority"
-            android:checked="true" />
+            android:checked="true"
+            android:minHeight="48dp"
+            android:text="Medium Priority" />
 
         <RadioButton
             android:id="@+id/rbLow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Low Priority"/>
+            android:minHeight="48dp"
+            android:text="Low Priority" />
     </RadioGroup>
 
     <Button

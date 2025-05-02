@@ -1,4 +1,12 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp" tools:context=".ConfigureTaskActivity">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".ConfigureTaskActivity"
+    android:fitsSystemWindows="true">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -67,25 +75,28 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         >
+
         <RadioButton
             android:id="@+id/rbPriorityHigh"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="High Priority"
-            />
+            android:minHeight="48dp"
+            android:text="High Priority" />
+
         <RadioButton
             android:id="@+id/rbPriorityMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Medium Priority"
             android:checked="true"
-            />
+            android:minHeight="48dp"
+            android:text="Medium Priority" />
+
         <RadioButton
             android:id="@+id/rbPriorityLow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Low Priority"
-            />
+            android:minHeight="48dp"
+            android:text="Low Priority" />
     </RadioGroup>
     <Button
         android:id="@+id/btnSaveChanges"
