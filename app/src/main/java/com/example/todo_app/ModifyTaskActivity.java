@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.Calendar;
 
@@ -52,6 +53,9 @@ public class ModifyTaskActivity extends AppCompatActivity {
                     priorityGroup.check(R.id.rbPriorityLow);
                     break;
             }
+        } else {
+            Toast.makeText(this, "Task data not available", Toast.LENGTH_SHORT).show();
+            finish();
         }
 
         // Date picker button
@@ -75,17 +79,32 @@ public class ModifyTaskActivity extends AppCompatActivity {
     }
 
     private void saveChanges() {
-        String name = taskName.getText().toString();
-        String description = taskDescription.getText().toString();
+        String name = taskName.getText().toString().trim();
+        String description = taskDescription.getText().toString().trim();
         String date = selectedDate.getText().toString();
+
+        // Input validation
+        if (name.isEmpty()) {
+            taskName.setError("Task name cannot be empty");
+            return;
+        }
+
+        if (date.equals("No selected date")) {
+            Toast.makeText(this, "Please select a due date", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         String priority = "Medium";
         int selectedId = priorityGroup.getCheckedRadioButtonId();
         if (selectedId == R.id.rbPriorityHigh) priority = "High";
         else if (selectedId == R.id.rbPriorityLow) priority = "Low";
 
+        // Create updated task with all properties
         Task updatedTask = new Task(name, description, date, priority);
         updatedTask.setCompleted(task.isCompleted());
+        updatedTask.setHasReminder(task.hasReminder());
+        updatedTask.setReminderTimeMillis(task.getReminderTimeMillis());
+        updatedTask.setId(task.getId()); // Preserve the same ID
 
         Intent resultIntent = new Intent();
         resultIntent.putExtra("updatedTask", updatedTask);
