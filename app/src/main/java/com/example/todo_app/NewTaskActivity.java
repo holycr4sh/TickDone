@@ -7,8 +7,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class NewTaskActivity extends AppCompatActivity {
     private EditText taskName, taskDescription;
@@ -27,11 +29,9 @@ public class NewTaskActivity extends AppCompatActivity {
         priorityGroup = findViewById(R.id.rgPriority);
         calendar = Calendar.getInstance();
 
-        // Date Picker Button
         Button btnSelectDate = findViewById(R.id.btnSelectDate);
         btnSelectDate.setOnClickListener(v -> showDatePicker());
 
-        // Save Button
         Button btnSaveTask = findViewById(R.id.btnSaveTask);
         btnSaveTask.setOnClickListener(v -> saveTask());
     }
@@ -39,7 +39,7 @@ public class NewTaskActivity extends AppCompatActivity {
     private void showDatePicker() {
         new DatePickerDialog(this, (view, year, month, day) -> {
             calendar.set(year, month, day);
-            String dateStr = (month + 1) + "/" + day + "/" + year;
+            String dateStr = String.format(Locale.getDefault(), "%d/%d/%d", month + 1, day, year);
             selectedDate.setText(dateStr);
         },
                 calendar.get(Calendar.YEAR),
@@ -48,9 +48,19 @@ public class NewTaskActivity extends AppCompatActivity {
     }
 
     private void saveTask() {
-        String name = taskName.getText().toString();
-        String description = taskDescription.getText().toString();
+        String name = taskName.getText().toString().trim();
+        String description = taskDescription.getText().toString().trim();
         String date = selectedDate.getText().toString();
+
+        if (name.isEmpty()) {
+            taskName.setError("Task name cannot be empty");
+            return;
+        }
+
+        if (date.equals("No selected date")) {
+            Toast.makeText(this, "Please select a due date", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         String priority = "Medium";
         int selectedId = priorityGroup.getCheckedRadioButtonId();

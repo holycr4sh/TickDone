@@ -62,6 +62,28 @@ public class Task implements Serializable {
         if (dueDate == null) return false;
         return !completed && dueDate.before(new Date());
     }
+    public Task(Task other) {
+        if (other == null) {
+            // Defensive programming to avoid null pointer exceptions
+            this.id = UUID.randomUUID().toString();
+            this.name = "";
+            this.description = "";
+            this.dueDate = "";
+            this.priority = "Medium";
+            this.completed = false;
+            this.hasReminder = false;
+            this.reminderTimeMillis = 0;
+            return;
+        }
 
+        this.id = other.id;
+        this.name = other.name;
+        this.description = other.description;
+        this.dueDate = other.dueDate;
+        this.priority = other.priority;
+        this.completed = other.completed;
+        this.hasReminder = other.hasReminder;
+        this.reminderTimeMillis = other.reminderTimeMillis;
+    }
 
 }

@@ -3,6 +3,9 @@ package com.example.todo_app;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,19 +31,16 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize SharedPreferences
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-
-        // Load tasks from storage
         tasks = loadTasks();
 
-        // Setup RecyclerView
         recyclerView = findViewById(R.id.tasksRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new TaskAdapter(this, tasks, this);
         recyclerView.setAdapter(adapter);
 
-        // Floating Action Button
+        updateEmptyState();
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
             Intent intent = new Intent(MainActivity.this, NewTaskActivity.class);
@@ -53,14 +53,15 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode != RESULT_OK || data == null) return;
 
-        if (requestCode == 1) { // New task result
+        if (requestCode == 1) {
             Task newTask = (Task) data.getSerializableExtra("newTask");
             if (newTask != null) {
                 tasks.add(newTask);
                 adapter.notifyItemInserted(tasks.size() - 1);
                 saveTasks();
+                updateEmptyState();
             }
-        } else if (requestCode == 2) { // Modified task result
+        } else if (requestCode == 2) {
             Task updatedTask = (Task) data.getSerializableExtra("updatedTask");
             int position = data.getIntExtra("position", -1);
             if (updatedTask != null && position != -1) {
@@ -87,7 +88,11 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         editor.apply();
     }
 
-    // TaskAdapter listener implementations
+    private void updateEmptyState() {
+        TextView emptyState = findViewById(R.id.emptyState);
+        emptyState.setVisibility(tasks.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
     @Override
     public void onTaskCompleted(int position, boolean isCompleted) {
         tasks.get(position).setCompleted(isCompleted);
@@ -101,20 +106,32 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             tasks.remove(position);
             adapter.notifyItemRemoved(position);
             saveTasks();
+            updateEmptyState();
             Toast.makeText(this, "Task deleted", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onTaskEdit(int position) {
-        if (position >= 0 && position < tasks.size()) {
+        try {
+            if (position < 0 || position >= tasks.size()) {
+                Log.e("MainActivity", "Invalid position: " + position);
+                Toast.makeText(this, "Invalid task position", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Task taskToEdit = tasks.get(position);
+            Log.d("MainActivity", "Original task: " + taskToEdit.getName() + ", ID: " + taskToEdit.getId());
+
             Intent intent = new Intent(this, ModifyTaskActivity.class);
-            intent.putExtra("task", tasks.get(position));
+            intent.putExtra("task", taskToEdit);
             intent.putExtra("position", position);
             startActivityForResult(intent, 2);
+        } catch (Exception e) {
+            Log.e("MainActivity", "Edit Error: " + e.getMessage(), e);
+            Toast.makeText(this, "Error editing task: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
-
     @Override
     public void onTaskReminder(int position) {
         if (position >= 0 && position < tasks.size()) {
