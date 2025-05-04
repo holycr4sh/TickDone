@@ -7,6 +7,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
+    android:paddingRight="40dp"
+    android:paddingLeft="40dp"
     android:background="@color/background"
     android:fitsSystemWindows="true">
 
@@ -14,6 +16,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Create New Task"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp"
         android:textAppearance="?attr/textAppearanceHeadline1"
         android:layout_marginBottom="24dp"/>
 
@@ -21,6 +25,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp"
         android:hint="Task Name"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
@@ -28,6 +34,8 @@
             android:id="@+id/taskName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingRight="16dp"
+            android:paddingLeft="16dp"
             android:inputType="textCapSentences|textMultiLine"
             android:maxLength="150" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -36,6 +44,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp"
         android:hint="Description"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
@@ -54,13 +64,17 @@
         android:text="Due Date"
         android:textAppearance="?attr/textAppearanceBody1"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="16dp"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSelectDate"
@@ -84,6 +98,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Priority"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp"
         android:textAppearance="?attr/textAppearanceBody1"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"/>
@@ -93,7 +109,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="24dp">
+        android:layout_marginBottom="24dp"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp">
 
         <com.google.android.material.radiobutton.MaterialRadioButton
             android:id="@+id/rbHigh"
@@ -122,9 +140,12 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSaveTask"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         android:text="Save Task"
-        android:padding="12dp"/>
+        android:layout_gravity="center_horizontal"/>
 
 </LinearLayout>

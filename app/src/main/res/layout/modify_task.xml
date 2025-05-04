@@ -8,9 +8,13 @@
     android:padding="24dp"
     android:background="@color/background"
     tools:context=".ModifyTaskActivity"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp">
 
     <TextView
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Edit Task"
@@ -22,6 +26,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Task Name"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -37,6 +43,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Description"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -52,6 +60,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Due Date"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         android:textAppearance="?attr/textAppearanceBody1"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"/>
@@ -60,6 +70,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         android:layout_marginBottom="16dp">
 
         <com.google.android.material.button.MaterialButton
@@ -67,6 +79,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Change Date"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
             app:icon="@android:drawable/ic_menu_my_calendar" />
 
         <TextView
@@ -77,6 +91,8 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="16dp"
             android:text="Current due date"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
             android:textAppearance="?attr/textAppearanceBody2"/>
     </LinearLayout>
 
@@ -84,11 +100,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Priority"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         android:textAppearance="?attr/textAppearanceBody1"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"/>
 
     <RadioGroup
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         android:id="@+id/rgPriority"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -121,8 +141,9 @@
     </RadioGroup>
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSaveChanges"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save Changes"
-        android:padding="12dp"/>
+        android:padding="12dp"
+        android:layout_gravity="center_horizontal"/>
 </LinearLayout>
