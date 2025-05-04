@@ -94,16 +94,16 @@ public class ModifyTaskActivity extends AppCompatActivity {
     private void setPriorityRadioButton(String priority) {
         switch (priority) {
             case "High":
-                priorityGroup.check(R.id.rbPriorityHigh);
+                priorityGroup.check(R.id.rbHigh);
                 break;
             case "Medium":
-                priorityGroup.check(R.id.rbPriorityMedium);
+                priorityGroup.check(R.id.rbMedium);
                 break;
             case "Low":
-                priorityGroup.check(R.id.rbPriorityLow);
+                priorityGroup.check(R.id.rbLow);
                 break;
             default:
-                priorityGroup.check(R.id.rbPriorityMedium);
+                priorityGroup.check(R.id.rbMedium);
         }
     }
 
@@ -143,8 +143,8 @@ public class ModifyTaskActivity extends AppCompatActivity {
 
     private String getSelectedPriority() {
         int selectedId = priorityGroup.getCheckedRadioButtonId();
-        if (selectedId == R.id.rbPriorityHigh) return "High";
-        if (selectedId == R.id.rbPriorityLow) return "Low";
+        if (selectedId == R.id.rbHigh) return "High";
+        if (selectedId == R.id.rbLow) return "Low";
         return "Medium";
     }
 }

@@ -1,33 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:cardElevation="4dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardElevation="2dp"
     app:cardCornerRadius="12dp"
-    android:layout_marginHorizontal="16dp"
-    android:layout_marginVertical="8dp">
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="6dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:orientation="vertical">
 
+        <!-- Task Header (Checkbox and Actions) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp">
 
-            <CheckBox
+            <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/todoCheckBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textSize="16sp"
                 android:textStyle="bold"
+                android:textColor="@color/on_surface"
+                android:paddingStart="8dp"
                 tools:text="Task Title" />
 
             <LinearLayout
@@ -37,30 +42,37 @@
 
                 <ImageButton
                     android:id="@+id/btnSetReminder"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Set reminder"
+                    android:padding="8dp"
+                    app:tint="@color/secondary"
                     android:src="@drawable/ic_reminder" />
 
                 <ImageButton
                     android:id="@+id/btnEditTask"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Edit task"
+                    android:padding="8dp"
+                    app:tint="@color/primary"
                     android:src="@drawable/ic_edit" />
 
                 <ImageButton
                     android:id="@+id/btnDeleteTask"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Delete task"
+                    android:padding="8dp"
+                    app:tint="@color/error"
                     android:src="@drawable/ic_delete" />
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Task Content -->
         <TextView
             android:id="@+id/taskDescription"
             android:layout_width="match_parent"
@@ -68,19 +80,33 @@
             android:textSize="14sp"
             android:maxLines="2"
             android:ellipsize="end"
+            android:textColor="@color/on_surface_medium"
             android:layout_marginStart="32dp"
+            android:layout_marginEnd="16dp"
+            android:paddingHorizontal="8dp"
             tools:text="This is the task description that can go over multiple lines but will be limited to only 2 lines with ellipsis." />
 
+        <!-- Task Due Date -->
         <TextView
             android:id="@+id/taskDueDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="12sp"
-            android:textColor="#757575"
-            android:layout_marginTop="4dp"
+            android:textColor="@color/on_surface_medium"
             android:layout_marginStart="32dp"
+            android:layout_marginEnd="16dp"
+            android:paddingHorizontal="8dp"
+            android:paddingBottom="16dp"
+            android:layout_marginTop="4dp"
             tools:text="Due: 5/15/2025" />
 
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+    <!-- Priority indicator strip -->
+    <View
+        android:id="@+id/priorityIndicator"
+        android:layout_width="6dp"
+        android:layout_height="match_parent"
+        android:background="@color/priority_medium" />
+
+</com.google.android.material.card.MaterialCardView>

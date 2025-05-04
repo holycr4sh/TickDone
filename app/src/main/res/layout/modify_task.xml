@@ -1,109 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:padding="16dp"
-    tools:context=".ConfigureTaskActivity"
+    android:padding="24dp"
+    android:background="@color/background"
+    tools:context=".ModifyTaskActivity"
     android:fitsSystemWindows="true">
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Modify Task"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Change Name"
-        android:layout_marginTop="16dp"
-        />
 
-    <EditText
-        android:id="@+id/taskName"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="Edit Task"
+        android:textAppearance="?attr/textAppearanceHeadline1"
+        android:layout_marginBottom="24dp"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:hint="Task Name"
-        android:inputType="textCapSentences|textMultiLine"
-        android:maxLength="150"
-        android:minHeight="48dp" />
-    <TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="Change Description"
-    android:layout_marginTop="16dp"
-    />
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
-    <EditText
-        android:id="@+id/taskDescription"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/taskName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLength="150" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Task Description"
-        android:inputType="textCapSentences|textMultiLine"
-        android:maxLength="150"
-        android:minHeight="48dp" />
+        android:layout_marginBottom="16dp"
+        android:hint="Description"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/taskDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences|textMultiLine"
+            android:minLines="3"
+            android:gravity="top|start" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Change Due Date"
-        android:layout_marginTop="16dp"
-        />
-    <Button
-        android:id="@+id/btnChangeDate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Select New Date"
-        />
-    <TextView
-        android:id="@+id/tvNewSelectedDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:text="Due Date"
+        android:textAppearance="?attr/textAppearanceBody1"
         android:layout_marginTop="8dp"
-        android:text="New date Selected will be here!"
-        />
+        android:layout_marginBottom="8dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnChangeDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change Date"
+            app:icon="@android:drawable/ic_menu_my_calendar" />
+
+        <TextView
+            android:id="@+id/tvNewSelectedDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:text="Current due date"
+            android:textAppearance="?attr/textAppearanceBody2"/>
+    </LinearLayout>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Change Priority"
-        android:layout_marginTop="16dp"
-        />
+        android:text="Priority"
+        android:textAppearance="?attr/textAppearanceBody1"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"/>
+
     <RadioGroup
         android:id="@+id/rgPriority"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        >
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp">
 
-        <RadioButton
-            android:id="@+id/rbPriorityHigh"
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rbHigh"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="High"
             android:minHeight="48dp"
-            android:text="High Priority" />
+            android:layout_marginEnd="16dp"/>
 
-        <RadioButton
-            android:id="@+id/rbPriorityMedium"
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rbMedium"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Medium"
             android:checked="true"
             android:minHeight="48dp"
-            android:text="Medium Priority" />
+            android:layout_marginEnd="16dp" />
 
-        <RadioButton
-            android:id="@+id/rbPriorityLow"
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rbLow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:text="Low Priority" />
+            android:text="Low"
+            android:minHeight="48dp" />
     </RadioGroup>
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSaveChanges"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Save Modifications"
-
-        />
+        android:text="Save Changes"
+        android:padding="12dp"/>
 </LinearLayout>
