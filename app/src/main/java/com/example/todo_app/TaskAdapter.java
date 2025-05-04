@@ -2,6 +2,8 @@ package com.example.todo_app;
 
 import android.content.Context;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,27 +45,41 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Task task = tasks.get(position);
+        View holderView = holder.itemView;
 
         holder.checkBox.setText(task.getName());
         holder.checkBox.setChecked(task.isCompleted());
         holder.taskDescription.setText(task.getDescription());
         holder.taskDueDate.setText("Due: " + task.getDueDate());
 
-        int priorityColor;
         switch (task.getPriority()) {
             case "High":
-                priorityColor = ContextCompat.getColor(context, R.color.priority_high);
+                holder.priorityColorIndicator.setBackgroundResource(R.drawable.priority_circle_high);
                 break;
             case "Medium":
-                priorityColor = ContextCompat.getColor(context, R.color.priority_medium);
+                holder.priorityColorIndicator.setBackgroundResource(R.drawable.priority_circle_medium);
                 break;
             case "Low":
-                priorityColor = ContextCompat.getColor(context, R.color.priority_low);
+                holder.priorityColorIndicator.setBackgroundResource(R.drawable.priority_circle_low);
                 break;
             default:
-                priorityColor = ContextCompat.getColor(context, R.color.white);
+                holder.priorityColorIndicator.setBackgroundResource(android.R.color.transparent); // Or a default color
+                break;
         }
-        holder.cardView.setCardBackgroundColor(priorityColor);
+
+// Reset text color (since the card background is now white)
+        holder.checkBox.setTextColor(ContextCompat.getColor(context, android.R.color.black));
+        holder.taskDescription.setTextColor(ContextCompat.getColor(context, android.R.color.black));
+        holder.taskDueDate.setTextColor(ContextCompat.getColor(context, android.R.color.black));
+
+// Reset icon colors to default (black or gray)
+        int defaultIconColor = ContextCompat.getColor(context, R.color.black); // Or your preferred default
+        PorterDuffColorFilter colorFilter = new PorterDuffColorFilter(defaultIconColor, PorterDuff.Mode.SRC_IN);
+        holder.btnDelete.setColorFilter(colorFilter);
+        holder.btnEdit.setColorFilter(colorFilter);
+        holder.btnSetReminder.setColorFilter(colorFilter);
+        holder.btnSetReminder.setImageResource(task.hasReminder() ? R.drawable.ic_reminder_set : R.drawable.ic_reminder);
+        holder.btnSetReminder.setColorFilter(colorFilter); // Re-apply after setting image
 
         if (task.isCompleted()) {
             holder.checkBox.setPaintFlags(holder.checkBox.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
@@ -98,9 +114,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         ImageButton btnDelete;
         ImageButton btnEdit;
         ImageButton btnSetReminder;
+        View priorityColorIndicator;
 
         public TaskViewHolder(@NonNull View itemView) {
             super(itemView);
+            priorityColorIndicator = itemView.findViewById(R.id.priorityColorIndicator);
             cardView = (CardView) itemView;
             checkBox = itemView.findViewById(R.id.todoCheckBox);
             taskDescription = itemView.findViewById(R.id.taskDescription);

@@ -12,16 +12,7 @@
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:liftOnScroll="true">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="@string/app_name"
-            app:titleTextColor="@color/white" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+        app:liftOnScroll="true"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -98,7 +89,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:text="New Task"
+        android:text=""
         android:contentDescription="Add New Task"
         app:icon="@drawable/add_icon"
         app:iconTint="@color/white"
