@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
-    private final List<Task> tasks;
+    private final List<Task> tasks; // Changed to the filtered list
     private final Context context;
     private final OnTaskActionListener listener;
 
@@ -28,7 +28,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     public TaskAdapter(Context context, List<Task> tasks, OnTaskActionListener listener) {
         this.context = context;
-        this.tasks = tasks;
+        this.tasks = tasks; // Now receives the filtered list
         this.listener = listener;
     }
 
@@ -67,22 +67,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
         if (task.isCompleted()) {
             holder.checkBox.setPaintFlags(holder.checkBox.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            holder.taskDescription.setPaintFlags(holder.taskDescription.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            holder.taskDueDate.setPaintFlags(holder.taskDueDate.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         } else {
             holder.checkBox.setPaintFlags(holder.checkBox.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-            holder.taskDescription.setPaintFlags(holder.taskDescription.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-            holder.taskDueDate.setPaintFlags(holder.taskDueDate.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
         }
 
-        if (task.isOverdue() && !task.isCompleted()) {
-            holder.taskDueDate.setTextColor(ContextCompat.getColor(context, R.color.red));
-        } else {
-            holder.taskDueDate.setTextColor(ContextCompat.getColor(context, R.color.gray));
-        }
-
-        holder.btnSetReminder.setImageResource(task.hasReminder() ?
-                R.drawable.ic_reminder_set : R.drawable.ic_reminder);
+        holder.btnSetReminder.setImageResource(task.hasReminder() ? R.drawable.ic_reminder_set : R.drawable.ic_reminder);
 
         holder.checkBox.setOnClickListener(v -> {
             boolean isChecked = holder.checkBox.isChecked();

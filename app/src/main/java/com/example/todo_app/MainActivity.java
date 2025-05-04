@@ -5,8 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,15 +15,23 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskActionListener {
+
     private RecyclerView recyclerView;
     private TaskAdapter adapter;
     private List<Task> tasks;
+    private List<Task> displayedTasks; // List to hold tasks that are currently displayed (filtered)
     private SharedPreferences sharedPreferences;
     private static final String PREFS_NAME = "TodoPrefs";
     private static final String TASKS_KEY = "tasks";
+    private static final String FILTER_KEY = "filter"; // Key to save the selected filter
+
+    private Spinner filterSpinner;
+    private String currentFilter = "All"; // Default filter
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,19 +40,99 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         tasks = loadTasks();
+        displayedTasks = new ArrayList<>(tasks); // Initially, display all tasks
 
         recyclerView = findViewById(R.id.tasksRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new TaskAdapter(this, tasks, this);
+        adapter = new TaskAdapter(this, displayedTasks, this); // Use displayedTasks
         recyclerView.setAdapter(adapter);
 
         updateEmptyState();
+        setupFilterSpinner();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
             Intent intent = new Intent(MainActivity.this, NewTaskActivity.class);
             startActivityForResult(intent, 1);
         });
+    }
+
+    private void setupFilterSpinner() {
+        filterSpinner = findViewById(R.id.filterSpinner);
+        ArrayAdapter<CharSequence> filterAdapter = ArrayAdapter.createFromResource(
+                this, R.array.filter_options, R.layout.spinner_item_layout); // Use custom layout
+        filterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        filterSpinner.setAdapter(filterAdapter);
+
+        // Load the previously selected filter
+        currentFilter = sharedPreferences.getString(FILTER_KEY, "All");
+        filterSpinner.setSelection(getFilterPosition(currentFilter));
+
+        filterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                currentFilter = parent.getItemAtPosition(position).toString();
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString(FILTER_KEY, currentFilter);
+                editor.apply();
+                applyFilter();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing
+            }
+        });
+    }
+
+    private int getFilterPosition(String filter) {
+        String[] filterOptions = getResources().getStringArray(R.array.filter_options);
+        for (int i = 0; i < filterOptions.length; i++) {
+            if (filterOptions[i].equals(filter)) {
+                return i;
+            }
+        }
+        return 0; // Default to "All"
+    }
+
+    private void applyFilter() {
+        displayedTasks.clear();
+        displayedTasks.addAll(tasks); // Reset to all tasks before filtering
+
+        switch (currentFilter) {
+            case "Priority":
+                filterByPriority();
+                break;
+            case "Due Date":
+                filterByDueDate();
+                break;
+        }
+
+        adapter.notifyDataSetChanged();
+        updateEmptyState();
+    }
+
+    private void filterByPriority() {
+        Collections.sort(displayedTasks, (task1, task2) -> {
+            int priorityOrder = getPriorityValue(task1.getPriority()) - getPriorityValue(task2.getPriority());
+            if (priorityOrder == 0) {
+                return task1.getDueDateAsDate().compareTo(task2.getDueDateAsDate());
+            }
+            return priorityOrder;
+        });
+    }
+
+    private int getPriorityValue(String priority) {
+        switch (priority) {
+            case "High": return 1;
+            case "Medium": return 2;
+            case "Low": return 3;
+            default: return 4; // For unknown priorities, sort them last
+        }
+    }
+
+    private void filterByDueDate() {
+        Collections.sort(displayedTasks, Comparator.comparing(Task::getDueDateAsDate));
     }
 
     @Override
@@ -57,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             Task newTask = (Task) data.getSerializableExtra("newTask");
             if (newTask != null) {
                 tasks.add(newTask);
-                adapter.notifyItemInserted(tasks.size() - 1);
+                applyFilter(); // Re-apply filter after adding a task
                 saveTasks();
                 updateEmptyState();
             }
@@ -66,76 +153,83 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
             int position = data.getIntExtra("position", -1);
             if (updatedTask != null && position != -1) {
                 tasks.set(position, updatedTask);
-                adapter.notifyItemChanged(position);
+                applyFilter(); // Re-apply filter after editing a task
                 saveTasks();
+                adapter.notifyItemChanged(position);
             }
         }
     }
 
-    private List<Task> loadTasks() {
-        String json = sharedPreferences.getString(TASKS_KEY, null);
-        if (json == null) {
-            return new ArrayList<>();
+    private void updateEmptyState() {
+        TextView emptyState = findViewById(R.id.emptyState);
+        if (displayedTasks.isEmpty()) {
+            emptyState.setVisibility(View.VISIBLE);
+        } else {
+            emptyState.setVisibility(View.GONE);
         }
-        Type type = new TypeToken<List<Task>>() {}.getType();
-        return new Gson().fromJson(json, type);
     }
 
     private void saveTasks() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        String json = new Gson().toJson(tasks);
+        Gson gson = new Gson();
+        String json = gson.toJson(tasks);
         editor.putString(TASKS_KEY, json);
         editor.apply();
     }
 
-    private void updateEmptyState() {
-        TextView emptyState = findViewById(R.id.emptyState);
-        emptyState.setVisibility(tasks.isEmpty() ? View.VISIBLE : View.GONE);
+    private List<Task> loadTasks() {
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString(TASKS_KEY, null);
+        Type type = new TypeToken<List<Task>>() {}.getType();
+        List<Task> loadedTasks = gson.fromJson(json, type);
+        return loadedTasks != null ? loadedTasks : new ArrayList<>();
     }
 
     @Override
     public void onTaskCompleted(int position, boolean isCompleted) {
-        tasks.get(position).setCompleted(isCompleted);
-        adapter.notifyItemChanged(position);
+        Task task = displayedTasks.get(position); // Use displayedTasks
+        task.setCompleted(isCompleted);
         saveTasks();
+        applyFilter(); // Re-apply filter to update the list
     }
 
     @Override
     public void onTaskDeleted(int position) {
-        if (position >= 0 && position < tasks.size()) {
-            tasks.remove(position);
-            adapter.notifyItemRemoved(position);
-            saveTasks();
-            updateEmptyState();
-            Toast.makeText(this, "Task deleted", Toast.LENGTH_SHORT).show();
-        }
+        Task task = displayedTasks.get(position); // Use displayedTasks
+        tasks.remove(task);
+        displayedTasks.remove(position);
+        saveTasks();
+        adapter.notifyItemRemoved(position);
+        updateEmptyState();
+        Toast.makeText(this, "Task deleted", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onTaskEdit(int position) {
         try {
-            if (position < 0 || position >= tasks.size()) {
+            if (position < 0 || position >= displayedTasks.size()) { // Use displayedTasks
                 Log.e("MainActivity", "Invalid position: " + position);
                 Toast.makeText(this, "Invalid task position", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            Task taskToEdit = tasks.get(position);
+            Task taskToEdit = displayedTasks.get(position); // Use displayedTasks
             Log.d("MainActivity", "Original task: " + taskToEdit.getName() + ", ID: " + taskToEdit.getId());
 
             Intent intent = new Intent(this, ModifyTaskActivity.class);
-            intent.putExtra("task", taskToEdit);
-            intent.putExtra("position", position);
+            intent.putExtra("task", new Task(taskToEdit));
+            intent.putExtra("position", tasks.indexOf(taskToEdit)); // Send original position
             startActivityForResult(intent, 2);
         } catch (Exception e) {
             Log.e("MainActivity", "Edit Error: " + e.getMessage(), e);
             Toast.makeText(this, "Error editing task: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
+
     @Override
     public void onTaskReminder(int position) {
-        if (position >= 0 && position < tasks.size()) {
-            Task task = tasks.get(position);
+        if (position >= 0 && position < displayedTasks.size()) { // Use displayedTasks
+            Task task = displayedTasks.get(position); // Use displayedTasks
             task.setHasReminder(!task.hasReminder());
             adapter.notifyItemChanged(position);
             saveTasks();
