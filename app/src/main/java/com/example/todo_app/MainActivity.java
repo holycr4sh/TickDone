@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -40,17 +42,17 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         tasks = loadTasks();
-        displayedTasks = new ArrayList<>(tasks); // Initially, display all tasks
+        displayedTasks = new ArrayList<>(tasks);
 
         recyclerView = findViewById(R.id.tasksRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new TaskAdapter(this, displayedTasks, this); // Use displayedTasks
+        adapter = new TaskAdapter(this, displayedTasks, this);
         recyclerView.setAdapter(adapter);
 
         updateEmptyState();
         setupFilterSpinner();
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        ExtendedFloatingActionButton fab = findViewById(R.id.fab); // Changed the type here
         fab.setOnClickListener(view -> {
             Intent intent = new Intent(MainActivity.this, NewTaskActivity.class);
             startActivityForResult(intent, 1);
