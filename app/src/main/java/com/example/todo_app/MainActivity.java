@@ -1,13 +1,27 @@
 package com.example.todo_app;
 
+import static com.example.todo_app.ReminderBroadcastReceiver.CHANNEL_ID;
+
+import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.*;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,10 +30,15 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskActionListener {
 
@@ -34,12 +53,16 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     private Spinner filterSpinner;
     private String currentFilter = "All"; // Default filter
+    private AlarmManager alarmManager; // Declaration of the alarmManager variable
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE); // Initialize alarmManager
+        createNotificationChannel(); // Call createNotificationChannel after super.onCreate()
         setContentView(R.layout.activity_main);
 
+        checkNotificationPermission();
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         tasks = loadTasks();
         displayedTasks = new ArrayList<>(tasks);
@@ -126,10 +149,14 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     private int getPriorityValue(String priority) {
         switch (priority) {
-            case "High": return 1;
-            case "Medium": return 2;
-            case "Low": return 3;
-            default: return 4; // For unknown priorities, sort them last
+            case "High":
+                return 1;
+            case "Medium":
+                return 2;
+            case "Low":
+                return 3;
+            default:
+                return 4; // For unknown priorities, sort them last
         }
     }
 
@@ -182,7 +209,8 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     private List<Task> loadTasks() {
         Gson gson = new Gson();
         String json = sharedPreferences.getString(TASKS_KEY, null);
-        Type type = new TypeToken<List<Task>>() {}.getType();
+        Type type = new TypeToken<List<Task>>() {
+        }.getType();
         List<Task> loadedTasks = gson.fromJson(json, type);
         return loadedTasks != null ? loadedTasks : new ArrayList<>();
     }
@@ -230,13 +258,121 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
 
     @Override
     public void onTaskReminder(int position) {
-        if (position >= 0 && position < displayedTasks.size()) { // Use displayedTasks
-            Task task = displayedTasks.get(position); // Use displayedTasks
+        if (position >= 0 && position < displayedTasks.size()) {
+            Task task = displayedTasks.get(position);
             task.setHasReminder(!task.hasReminder());
             adapter.notifyItemChanged(position);
             saveTasks();
             String message = task.hasReminder() ? "Reminder set" : "Reminder removed";
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+
+            if (task.hasReminder()) {
+                scheduleReminder(task);
+            } else {
+                cancelReminder(task);
+            }
+        }
+    }
+
+    private void scheduleReminder(Task task) {
+        SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy", Locale.US);
+        try {
+            Date dueDate = sdf.parse(task.getDueDate());
+            if (dueDate != null) {
+                // You might want to let the user set a specific time for the reminder
+                // For now, let's set it for the morning of the due date (8:00 AM)
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dueDate);
+                calendar.set(Calendar.HOUR_OF_DAY, 8);
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.SECOND, 0);
+
+                // If the reminder time is in the past, schedule it for the next day
+                if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
+                    calendar.add(Calendar.DAY_OF_YEAR, 1);
+                }
+
+                Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
+                intent.putExtra(ReminderBroadcastReceiver.TASK_NAME_EXTRA, task.getName());
+                intent.putExtra(ReminderBroadcastReceiver.TASK_ID_EXTRA, task.getId());
+
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                        this, task.getId().hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                );
+
+                alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                Log.d("MainActivity", "Reminder scheduled for: " + task.getName() + " on " + sdf.format(calendar.getTime()));
+
+            } else {
+                Log.e("MainActivity", "Error parsing due date for reminder: " + task.getName());
+                Toast.makeText(this, "Could not set reminder due to invalid date", Toast.LENGTH_SHORT).show();
+                task.setHasReminder(false); // Revert the reminder status
+                adapter.notifyItemChanged(displayedTasks.indexOf(task));
+                saveTasks();
+            }
+        } catch (ParseException e) {
+            Log.e("MainActivity", "Error parsing due date: " + e.getMessage());
+            Toast.makeText(this, "Could not set reminder due to date parsing error", Toast.LENGTH_SHORT).show();
+            task.setHasReminder(false); // Revert the reminder status
+            adapter.notifyItemChanged(displayedTasks.indexOf(task));
+            saveTasks();
+        }
+    }
+
+    private void cancelReminder(Task task) {
+        Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this, task.getId().hashCode(), intent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+        alarmManager.cancel(pendingIntent);
+        Log.d("MainActivity", "Reminder cancelled for: " + task.getName());
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Task Reminders";
+            String description = "Reminders for your todo tasks";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Log.d("MainActivity", "Notification permission granted");
+                    Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show();
+                    // You can proceed with setting up reminders here if needed
+                } else {
+                    Log.w("MainActivity", "Notification permission not granted");
+                    Toast.makeText(this, "Notification permission is required for reminders", Toast.LENGTH_LONG).show();
+                    // Optionally, explain why the permission is needed and how to enable it
+                }
+            });
+
+    private void checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED) {
+                Log.d("MainActivity", "Notification permission already granted");
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                // Explain to the user why the permission is needed (optional UI)
+                Log.w("MainActivity", "Showing notification permission rationale");
+                Toast.makeText(this, "This app needs permission to send notifications for reminders.", Toast.LENGTH_LONG).show();
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            } else {
+                // Request the permission directly
+                Log.d("MainActivity", "Requesting notification permission");
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        } else {
+            // On older versions, permission is granted at install time
+            Log.d("MainActivity", "Notification permission granted by default on older versions");
         }
     }
 }
