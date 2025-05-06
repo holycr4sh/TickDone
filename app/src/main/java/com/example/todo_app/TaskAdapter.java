@@ -47,6 +47,19 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         Task task = tasks.get(position);
         View holderView = holder.itemView;
 
+        holder.btnSetReminder.setOnClickListener(v -> {
+            if (!task.hasReminder()) {
+                ReminderDialogFragment.newInstance(task)
+                        .show(((MainActivity) context).getSupportFragmentManager(), "ReminderDialog");
+            } else {
+                // Option 1: Show dialog to modify or remove
+                ReminderDialogFragment.newInstance(task)
+                        .show(((MainActivity) context).getSupportFragmentManager(), "ReminderDialog");
+                // Option 2: Directly remove (with optional confirmation)
+                // ((MainActivity) context).onTaskReminder(position);
+            }
+        });
+
         holder.checkBox.setText(task.getName());
         holder.checkBox.setChecked(task.isCompleted());
         holder.taskDescription.setText(task.getDescription());

@@ -40,7 +40,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskActionListener {
+public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTaskActionListener, ReminderDialogFragment.OnReminderSetListener {
 
     private RecyclerView recyclerView;
     private TaskAdapter adapter;
@@ -55,6 +55,43 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     private String currentFilter = "All"; // Default filter
     private AlarmManager alarmManager; // Declaration of the alarmManager variable
 
+    private ActivityResultLauncher<String> requestExactAlarmPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Log.d("MainActivity", "SCHEDULE_EXACT_ALARM permission granted");
+                    // Proceed with scheduling the reminder
+                    // You might want to reschedule any pending reminders here
+                } else {
+                    Log.w("MainActivity", "SCHEDULE_EXACT_ALARM permission not granted");
+                    Toast.makeText(this, "Precise reminders might not work without this permission.", Toast.LENGTH_LONG).show();
+                    // Optionally, explain why the permission is needed and how to enable it in settings
+                }
+            });
+
+    private void checkExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // 'S' is for Android 12 (API 31)
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.SCHEDULE_EXACT_ALARM
+            ) == PackageManager.PERMISSION_GRANTED) {
+                Log.d("MainActivity", "SCHEDULE_EXACT_ALARM permission already granted");
+                // Proceed with scheduling
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.SCHEDULE_EXACT_ALARM)) {
+                // Explain why the permission is needed (optional UI)
+                Log.w("MainActivity", "Showing SCHEDULE_EXACT_ALARM permission rationale");
+                Toast.makeText(this, "This app needs precise alarm permission for reliable reminders.", Toast.LENGTH_LONG).show();
+                requestExactAlarmPermissionLauncher.launch(Manifest.permission.SCHEDULE_EXACT_ALARM);
+            } else {
+                // Request the permission directly
+                Log.d("MainActivity", "Requesting SCHEDULE_EXACT_ALARM permission");
+                requestExactAlarmPermissionLauncher.launch(Manifest.permission.SCHEDULE_EXACT_ALARM);
+            }
+        } else {
+            // On older versions, this permission is not needed
+            Log.d("MainActivity", "SCHEDULE_EXACT_ALARM permission not needed on older versions");
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
         setContentView(R.layout.activity_main);
 
         checkNotificationPermission();
+        checkExactAlarmPermission(); // Request SCHEDULE_EXACT_ALARM permission
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         tasks = loadTasks();
         displayedTasks = new ArrayList<>(tasks);
@@ -257,68 +295,91 @@ public class MainActivity extends AppCompatActivity implements TaskAdapter.OnTas
     }
 
     @Override
-    public void onTaskReminder(int position) {
-        if (position >= 0 && position < displayedTasks.size()) {
-            Task task = displayedTasks.get(position);
-            task.setHasReminder(!task.hasReminder());
-            adapter.notifyItemChanged(position);
-            saveTasks();
-            String message = task.hasReminder() ? "Reminder set" : "Reminder removed";
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-
-            if (task.hasReminder()) {
+    public void onReminderSet(String taskId, long reminderTimeInMillis) {
+        for (int i = 0; i < displayedTasks.size(); i++) {
+            if (displayedTasks.get(i).getId().equals(taskId)) {
+                Task task = displayedTasks.get(i);
+                task.setHasReminder(true);
+                task.setReminderTimeInMillis(reminderTimeInMillis);
+                adapter.notifyItemChanged(i);
+                saveTasks();
+                Log.d("MainActivity", "onReminderSet - reminderTimeInMillis: " + reminderTimeInMillis); // Added log
                 scheduleReminder(task);
-            } else {
-                cancelReminder(task);
+                break;
             }
         }
     }
 
-    private void scheduleReminder(Task task) {
-        SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy", Locale.US);
-        try {
-            Date dueDate = sdf.parse(task.getDueDate());
-            if (dueDate != null) {
-                // You might want to let the user set a specific time for the reminder
-                // For now, let's set it for the morning of the due date (8:00 AM)
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(dueDate);
-                calendar.set(Calendar.HOUR_OF_DAY, 8);
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.SECOND, 0);
+    @Override
+    public void onTaskReminder(int position) {
+        if (position >= 0 && position < displayedTasks.size()) {
+            Task task = displayedTasks.get(position);
+            ReminderDialogFragment.newInstance(task)
+                    .show(getSupportFragmentManager(), "ReminderDialog");
+        }
+    }
 
-                // If the reminder time is in the past, schedule it for the next day
+    private void scheduleReminder(Task task) {
+        Log.d("MainActivity", "scheduleReminder called for: " + task.getName());
+        SimpleDateFormat sdf = new SimpleDateFormat("M/d/yyyy hh:mm a", Locale.US);
+        try {
+            if (task.hasReminder() && task.getReminderTimeInMillis() > 0) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(task.getReminderTimeInMillis());
+
                 if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
-                    calendar.add(Calendar.DAY_OF_YEAR, 1);
+                    Log.w("MainActivity", "Reminder time is in the past, scheduling for the future.");
+                    calendar.add(Calendar.MINUTE, 1);
+                    task.setReminderTimeInMillis(calendar.getTimeInMillis());
+                    saveTasks();
                 }
 
                 Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
                 intent.putExtra(ReminderBroadcastReceiver.TASK_NAME_EXTRA, task.getName());
                 intent.putExtra(ReminderBroadcastReceiver.TASK_ID_EXTRA, task.getId());
+                //intent.addFlags(Intent.FLAG_WAKE_FROM_IDLE); // Removed FLAG_WAKE_FROM_IDLE
 
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                        this, task.getId().hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                        this, task.getId().hashCode(), intent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE
                 );
 
-                alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
-                Log.d("MainActivity", "Reminder scheduled for: " + task.getName() + " on " + sdf.format(calendar.getTime()));
+                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (alarmManager.canScheduleExactAlarms()) {
+                        AlarmManager.AlarmClockInfo alarmClockInfo = new AlarmManager.AlarmClockInfo(calendar.getTimeInMillis(), null);
+                        alarmManager.setAlarmClock(alarmClockInfo, pendingIntent);
+                        Log.d("MainActivity", "Reminder scheduled (using setAlarmClock) for: " + task.getName() + " on " + sdf.format(calendar.getTime()));
+                    } else {
+                        Log.w("MainActivity", "Cannot schedule exact alarm: Permission not granted or system restriction.");
+                        Toast.makeText(this, "Reminder might not be exact.", Toast.LENGTH_SHORT).show();
+                        // As a fallback, you might consider using setAlarm() which is less precise
+                        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+                        Log.d("MainActivity", "Reminder scheduled (using set) for: " + task.getName() + " on " + sdf.format(calendar.getTime()));
+                    }
+                } else {
+                    AlarmManager.AlarmClockInfo alarmClockInfo = new AlarmManager.AlarmClockInfo(calendar.getTimeInMillis(), null);
+                    alarmManager.setAlarmClock(alarmClockInfo, pendingIntent);
+                    Log.d("MainActivity", "Reminder scheduled (using setAlarmClock) for: " + task.getName() + " on " + sdf.format(calendar.getTime()));
+                }
 
-            } else {
-                Log.e("MainActivity", "Error parsing due date for reminder: " + task.getName());
-                Toast.makeText(this, "Could not set reminder due to invalid date", Toast.LENGTH_SHORT).show();
-                task.setHasReminder(false); // Revert the reminder status
+            } else if (task.hasReminder() && task.getReminderTimeInMillis() == 0) {
+                Log.w("MainActivity", "Reminder time not set for: " + task.getName());
+                Toast.makeText(this, "Please set a time for the reminder", Toast.LENGTH_SHORT).show();
+                task.setHasReminder(false);
                 adapter.notifyItemChanged(displayedTasks.indexOf(task));
                 saveTasks();
+            } else if (!task.hasReminder()) {
+                cancelReminder(task);
             }
-        } catch (ParseException e) {
-            Log.e("MainActivity", "Error parsing due date: " + e.getMessage());
-            Toast.makeText(this, "Could not set reminder due to date parsing error", Toast.LENGTH_SHORT).show();
-            task.setHasReminder(false); // Revert the reminder status
+
+        } catch (Exception e) {
+            Log.e("MainActivity", "Error scheduling reminder: " + e.getMessage());
+            Toast.makeText(this, "Error scheduling reminder", Toast.LENGTH_SHORT).show();
+            task.setHasReminder(false);
             adapter.notifyItemChanged(displayedTasks.indexOf(task));
             saveTasks();
         }
     }
-
     private void cancelReminder(Task task) {
         Intent intent = new Intent(this, ReminderBroadcastReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(

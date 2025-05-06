@@ -15,6 +15,7 @@ public class Task implements Serializable {
     private String priority;
     private boolean completed;
     private boolean hasReminder;
+    private long reminderTimeInMillis; // Add this field
 
     public Task(String name, String description, String dueDate, String priority) {
         this.id = UUID.randomUUID().toString();
@@ -24,6 +25,7 @@ public class Task implements Serializable {
         this.priority = priority;
         this.completed = false;
         this.hasReminder = false;
+        this.reminderTimeInMillis = 0; // Initialize to 0 or a default value
     }
 
     public Task(Task other) {
@@ -34,9 +36,19 @@ public class Task implements Serializable {
         this.priority = other.priority;
         this.completed = other.completed;
         this.hasReminder = other.hasReminder;
+        this.reminderTimeInMillis = other.reminderTimeInMillis; // Copy the reminder time
     }
 
     // Getters and setters
+
+    public long getReminderTimeInMillis() { // Add this getter
+        return reminderTimeInMillis;
+    }
+
+    public void setReminderTimeInMillis(long reminderTimeInMillis) { // Add this setter
+        this.reminderTimeInMillis = reminderTimeInMillis;
+    }
+
     public String getId() {
         return id;
     }
